@@ -1,0 +1,322 @@
+1.	Automate any web login flow using Selenium
+
+Feature: Login to E-commerce Platform
+
+  Scenario: Login with valid credentials
+    Given the user is on the login page
+    When the user enters valid credentials
+    Then the user should be redirected to the homepage
+
+  Scenario: Login with invalid credentials
+    Given the user is on the login page
+    When the user enters invalid credentials
+    Then an error message should be displayed
+
+package stepdefinitions;
+
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.When;
+import io.cucumber.java.en.Then;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.Assert;
+
+public class LoginSteps {
+    WebDriver driver = new ChromeDriver();  // WebDriver instance
+
+    @Given("the user is on the login page")
+    public void theUserIsOnTheLoginPage() {
+        // Open the login page
+        driver.get("https://flipkart.com/login");  
+    }
+
+    @When("the user enters valid credentials")
+    public void theUserEntersValidCredentials() {
+        // Locate and interact with the elements
+        WebElement usernameField = driver.findElement(//input[@id='username']);
+        WebElement passwordField = driver.findElement(//input[@id='password']);
+        WebElement loginButton = driver.findElement(//input[@id='login']);
+        
+        // Enter valid credentials
+        usernameField.sendKeys("validuser");
+        passwordField.sendKeys("validpassword");
+        loginButton.click();
+    }
+
+    @When("the user enters invalid credentials")
+    public void theUserEntersInvalidCredentials() {
+        // Locate and interact with the elements
+      WebElement usernameField = driver.findElement(//input[@id='username']);
+        WebElement passwordField = driver.findElement(//input[@id='password']);
+        WebElement loginButton = driver.findElement(//input[@id='login']);
+        
+        // Enter invalid credentials
+        usernameField.sendKeys("invaliduser");
+        passwordField.sendKeys("invalidpassword");
+        loginButton.click();
+    }
+
+    @Then("the user should be redirected to the homepage")
+    public void theUserShouldBeRedirectedToTheHomepage() {
+        // Validate successful login by checking the presence of an element on the homepage
+        WebElement homepageElement = driver.findElement(By.id("homepageElement"));  
+        Assert.assertTrue(homepageElement.isDisplayed(), "User is not redirected to homepage");
+    }
+
+    @Then("an error message should be displayed")
+    public void anErrorMessageShouldBeDisplayed() {
+        // Validate the error message
+        WebElement errorMessage = driver.findElement(By.id("errorMessage"));
+        Assert.assertTrue(errorMessage.isDisplayed(), "Error message is not displayed");
+    }
+}
+
+package testrunners;
+
+import io.cucumber.testng.CucumberOptions;
+import io.cucumber.testng.AbstractTestNGCucumberTests;
+
+@CucumberOptions(
+    features = "src/test/resources/features/login.feature",  // Path to the feature file
+    glue = "stepdefinitions",  // Path to step definition classes
+    plugin = {"pretty", "html:target/cucumber-reports.html"}  // Optional: Generate report
+)
+public class TestRunner extends AbstractTestNGCucumberTests {
+}
+
+2.	Automate any POST API
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "password": "Password123!"
+}
+package apitests;
+
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+public class PostAPIRequest {
+
+    @Test
+    public void testCreateUser() {
+        // Base URI of the e-commerce API
+        String baseURI = "https://example.com/api/v1/users";  // Replace with actual API base URL
+
+        // Request Body (JSON)
+        String requestBody = "{\n" +
+                "  \"firstName\": \"John\",\n" +
+                "  \"lastName\": \"Doe\",\n" +
+                "  \"email\": \"john.doe@example.com\",\n" +
+                "  \"password\": \"Password123!\"\n" +
+                "}";
+
+        // Send POST request
+        Response response = RestAssured.given()
+                .baseUri(baseURI)  // Set the base URI
+                .contentType(ContentType.JSON)  // Set content type as JSON
+                .body(requestBody)  // Attach the request body
+                .post();  // Send the POST request
+
+        // Validate the response status code (201 for Created)
+        Assert.assertEquals(response.getStatusCode(), 201, "Expected status code 201");
+
+        // Validate the response body if necessary (optional)
+        String responseBody = response.getBody().asString();
+        System.out.println("Response Body: " + responseBody);
+
+        // Example: Validate that the response contains a user ID (if returned in response)
+        Assert.assertTrue(responseBody.contains("id"), "Response body should contain user ID");
+
+        // Validate the 'message' or 'success' field if the API returns one
+        String message = response.jsonPath().getString("message");
+        Assert.assertEquals(message, "User created successfully", "Expected success message not found");
+    }
+}
+
+3.	Automate any mobile app flow iOS
+
+package automation.tests;
+
+import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.MobileElement;
+import io.appium.java_client.ios.IOSDriver;
+import io.appium.java_client.ios.IOSMobileElement;
+import org.openqa.selenium.By;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import org.testng.annotations.AfterClass;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
+public class AppiumAutomationTest {
+
+    private AppiumDriver<MobileElement> driver;
+
+    // Set up Appium and start the driver
+    @BeforeClass
+    public void setUp() throws MalformedURLException {
+        DesiredCapabilities caps = new DesiredCapabilities();
+
+        // Set the path to the app (.app or .ipa file) and device details
+        caps.setCapability("platformName", "iOS");
+        caps.setCapability("platformVersion", "14.4");  // iOS version on your simulator/device
+        caps.setCapability("deviceName", "iPhone Simulator");  // Use your simulator or real device name
+        caps.setCapability("app", "/path/to/your/app.app");  // Path to the app file (.app or .ipa)
+        caps.setCapability("automationName", "XCUITest");  // Use XCUITest for iOS
+
+        // Start the Appium server and initialize the driver
+        URL appiumServerURL = new URL("http://localhost:4723/wd/hub");
+        driver = new IOSDriver<>(appiumServerURL, caps);
+    }
+
+    // Automate the login test
+    @Test
+    public void testLoginWithValidCredentials() {
+        // Locate the elements and perform actions
+        MobileElement usernameField = driver.findElement(By.accessibilityId("username"));
+        MobileElement passwordField = driver.findElement(By.accessibilityId("password"));
+        MobileElement loginButton = driver.findElement(By.accessibilityId("loginButton"));
+
+        // Enter valid credentials (replace with actual test data)
+        usernameField.sendKeys("testuser");
+        passwordField.sendKeys("Password123");
+
+        // Click the login button
+        loginButton.click();
+
+        // Check if login is successful by validating that a specific element (like a welcome message) appears
+        MobileElement welcomeMessage = driver.findElement(By.accessibilityId("welcomeMessage"));
+        Assert.assertTrue(welcomeMessage.isDisplayed(), "Welcome message not displayed after successful login");
+    }
+
+    @Test
+    public void testLoginWithInvalidCredentials() {
+        // Locate the elements and perform actions
+        MobileElement usernameField = driver.findElement(By.accessibilityId("username"));
+        MobileElement passwordField = driver.findElement(By.accessibilityId("password"));
+        MobileElement loginButton = driver.findElement(By.accessibilityId("loginButton"));
+
+        // Enter invalid credentials (replace with actual invalid test data)
+        usernameField.sendKeys("invaliduser");
+        passwordField.sendKeys("InvalidPassword");
+
+        // Click the login button
+        loginButton.click();
+
+        // Check if an error message appears
+        MobileElement errorMessage = driver.findElement(By.accessibilityId("errorMessage"));
+        Assert.assertTrue(errorMessage.isDisplayed(), "Error message not displayed for invalid login");
+    }
+
+    // Clean up and close the driver
+    @AfterClass
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();  // Close the app and stop the driver
+        }
+    }
+}
+
+4. Automate any mobile app flow Android
+
+package automation.tests;
+
+import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.MobileElement;
+import io.appium.java_client.android.AndroidDriver;
+import org.openqa.selenium.By;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import org.testng.annotations.AfterClass;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
+public class AppiumAndroidLoginTest {
+
+    private AppiumDriver<MobileElement> driver;
+
+    // Set up Appium and start the driver
+    @BeforeClass
+    public void setUp() throws MalformedURLException {
+        DesiredCapabilities caps = new DesiredCapabilities();
+
+        // Set the desired capabilities for the Android app and device
+        caps.setCapability("platformName", "Android");
+        caps.setCapability("platformVersion", "11.0");  // Set the version of the Android OS
+        caps.setCapability("deviceName", "Android Emulator");  // Set the name of the emulator/device
+        caps.setCapability("appPackage", "com.example.app");  // The package name of your app
+        caps.setCapability("appActivity", "com.example.app.MainActivity");  // The main activity of your app
+        caps.setCapability("automationName", "UiAutomator2");  // Use UiAutomator2 for Android automation
+
+        // Start the Appium server and initialize the driver
+        URL appiumServerURL = new URL("http://localhost:4723/wd/hub");
+        driver = new AndroidDriver<>(appiumServerURL, caps);
+    }
+
+    // Automate login with valid credentials
+    @Test
+    public void testLoginWithValidCredentials() {
+        // Locate the elements for username, password, and login button
+        MobileElement usernameField = driver.findElement(By.id("com.example.app:id/username"));
+        MobileElement passwordField = driver.findElement(By.id("com.example.app:id/password"));
+        MobileElement loginButton = driver.findElement(By.id("com.example.app:id/login_button"));
+
+        // Enter valid credentials
+        usernameField.sendKeys("testuser");
+        passwordField.sendKeys("validpassword");
+
+        // Click the login button
+        loginButton.click();
+
+        // Validate successful login by checking for a UI element on the home page
+        MobileElement homePageElement = driver.findElement(By.id("com.example.app:id/homePage"));
+        Assert.assertTrue(homePageElement.isDisplayed(), "Login was unsuccessful");
+    }
+
+    // Automate login with invalid credentials
+    @Test
+    public void testLoginWithInvalidCredentials() {
+        // Locate the elements for username, password, and login button
+        MobileElement usernameField = driver.findElement(By.id("com.example.app:id/username"));
+        MobileElement passwordField = driver.findElement(By.id("com.example.app:id/password"));
+        MobileElement loginButton = driver.findElement(By.id("com.example.app:id/login_button"));
+
+        // Enter invalid credentials
+        usernameField.sendKeys("invaliduser");
+        passwordField.sendKeys("invalidpassword");
+
+        // Click the login button
+        loginButton.click();
+
+        // Validate the error message is displayed
+        MobileElement errorMessage = driver.findElement(By.id("com.example.app:id/error_message"));
+        Assert.assertTrue(errorMessage.isDisplayed(), "Error message not displayed for invalid credentials");
+    }
+
+    // Clean up and close the driver after tests
+    @AfterClass
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();  // Close the app and stop the driver
+        }
+    }
+}
+
+
+
+
+
+
+
